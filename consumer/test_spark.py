@@ -1,11 +1,32 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 spark = (
     SparkSession.builder
-    .appName("BronzeLayer")
+    .appName("KafkaTest")
     .getOrCreate()
 )
 
-print(spark.version)
+spark.sparkContext.setLogLevel("ERROR")
 
-spark.stop()
+df = (
+    spark.readStream
+    .format("kafka")
+    .option("kafka.bootstrap.servers", "localhost:9092")
+    .option("subscribe", "ecommerce-events")
+    .option("startingOffsets", "latest")
+    .load()
+)
+
+parsed = df.select(
+    col("value").cast("string").alias("message")
+)
+
+query = (
+    parsed.writeStream
+    .format("console")
+    .option("truncate", False)
+    .start()
+)
+
+query.awaitTermination()

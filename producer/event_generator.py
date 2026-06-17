@@ -45,4 +45,4 @@ while True:
     f"offset={record_metadata.offset}"
     )
 
-    time.sleep(2)
+    time.sleep(5)
