@@ -10,39 +10,50 @@ fake = Faker()
 
 producer = KafkaProducer(
     bootstrap_servers="localhost:9092",
-    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),
 )
 
-event_types = [
-    "view",
-    "add_to_cart",
-    "purchase"
-]
+event_types = ["view", "add_to_cart", "purchase"]
+
+previous_event = None
 
 while True:
 
-    event = {
-        "event_id": str(uuid.uuid4()),
-        "user_id": random.randint(1, 1000),
-        "session_id": random.randint(10000, 99999),
-        "event_time": datetime.utcnow().isoformat(),
-        "event_type": random.choice(event_types),
-        "product_id": f"P{random.randint(1,100)}",
-        "amount": round(random.uniform(100, 5000), 2)
-    }
+    # event = {
+    #     "event_id": str(uuid.uuid4()),
+    #     "user_id": random.randint(1, 1000),
+    #     "session_id": random.randint(10000, 99999),
+    #     "event_time": datetime.utcnow().isoformat(),
+    #     "event_type": random.choice(event_types),
+    #     "product_id": f"P{random.randint(1,100)}",
+    #     "amount": round(random.uniform(100, 5000), 2)
+    # }
+    is_duplicate = False
+    if previous_event and random.random() < 0.4:
+        event = previous_event
+        is_duplicate = True
+    else:
+        event = {
+            "event_id": str(uuid.uuid4()),
+            "user_id": random.randint(1, 1000),
+            "session_id": random.randint(10000, 99999),
+            "event_time": datetime.utcnow().isoformat(),
+            "event_type": random.choice(event_types),
+            "product_id": f"P{random.randint(1,100)}",
+            "amount": round(random.uniform(100, 5000), 2),
+        }
 
-    future = producer.send(
-        "ecommerce-events",
-        value=event
-    )
-    
+    previous_event = event
+    # Send the event to Kafka
+    future = producer.send("ecommerce-events", value=event)
     record_metadata = future.get(timeout=10)
 
-    print(event)
-
+    # Clean, simple console log output
+    dup_label = "[DUPLICATE] " if is_duplicate else ""
     print(
-    f"Sent to partition={record_metadata.partition}, "
-    f"offset={record_metadata.offset}"
+        f"{dup_label}Event ID: {event['event_id']} | "
+        f"Partition: {record_metadata.partition} | "
+        f"Offset: {record_metadata.offset}"
     )
 
-    time.sleep(20)
+    time.sleep(6)
