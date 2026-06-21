@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "EcommerceEvent",
+  "namespace": "com.ecommerce",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "user_id", "type": "int"},
+    {"name": "session_id", "type": "int"},
+    {"name": "event_time", "type": "string"},
+    {"name": "event_type", "type": "string"},
+    {"name": "product_id", "type": "string"},
+    {"name": "amount", "type": "double"}
+  ]
+}
