@@ -5,18 +5,18 @@ from pyspark.sql.functions import to_date
 # Make sure Spark's DataFrame class is imported
 from pyspark.sql import DataFrame  
 from pyspark.sql import SparkSession
-# import sys
-# import os
+import sys
+import os
 
-# # 1. Get the absolute path of the directory containing the script (consumer/)
-# script_dir = os.path.dirname(os.path.abspath(__file__))
+# 1. Get the absolute path of the directory containing the script (consumer/)
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# # 2. Get the parent directory (ecommerce-lakehouse/)
-# project_root = os.path.dirname(script_dir)
+# 2. Get the parent directory (ecommerce-lakehouse/)
+project_root = os.path.dirname(script_dir)
 
-# # 3. Add the project root to Python's search path if it's not already there
-# if project_root not in sys.path:
-#     sys.path.insert(0, project_root)
+# 3. Add the project root to Python's search path if it's not already there
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 
 # from common.debug_utils import log_processed_batch
@@ -83,42 +83,31 @@ silver_df = silver_df.withColumn(
     to_date("event_time")
 )
 
-# from common.quality_checks import (
-#     validate_records,
-#     quarantine_records
-# )
+from common.quality_checks import (
+    get_valid_records,
+    get_invalid_records
+)
 
-# valid_df = validate_records(silver_df)
-# bad_df = quarantine_records(silver_df)
+valid_df = get_valid_records(silver_df)
+bad_df = get_invalid_records(silver_df)
 
-# bad_query = (
-#     bad_df.writeStream
-#     .format("parquet")
-#     .partitionBy("event_date")
-#     .option(
-#         "path",
-#         "/home/snahal/ecommerce-lakehouse/quarantine"
-#     )
-#     .option(
-#         "checkpointLocation",
-#         "/home/snahal/ecommerce-lakehouse/checkpoints/quarantine"
-#     )
-#     .outputMode("append")
-#     .trigger(processingTime="20 seconds")
-#     .start()
-# )
+bad_query = (
+    bad_df.writeStream
+    .format("parquet")
+    .partitionBy("event_date")
+    .option(
+        "path",
+        "/home/snahal/ecommerce-lakehouse/quarantine"
+    )
+    .option(
+        "checkpointLocation",
+        "/home/snahal/ecommerce-lakehouse/checkpoints/quarantine"
+    )
+    .outputMode("append")
+    .trigger(processingTime="20 seconds")
+    .start()
+)
 
-# def process_and_log_silver(batch_df: DataFrame, batch_id: int):
-#     # 1. Log the tracking details to the console using your common tool
-#     log_processed_batch(batch_df, batch_id)
-    
-#     # 2. Write the actual data to your silver storage (Move partitionBy here!)
-#     if not batch_df.isEmpty():
-#         batch_df.write \
-#             .format("parquet") \
-#             .partitionBy("event_date") \
-#             .mode("append") \
-#             .save("/home/snahal/ecommerce-lakehouse/silver")
 
 def process_save_and_print(batch_df: DataFrame, batch_id: int):
     if not batch_df.isEmpty():
@@ -140,7 +129,7 @@ def process_save_and_print(batch_df: DataFrame, batch_id: int):
             .save("/home/snahal/ecommerce-lakehouse/silver")
 
 query = (
-    silver_df.writeStream
+    valid_df.writeStream
     # .format("parquet")
     .foreachBatch(process_save_and_print)
     # .option(
@@ -157,6 +146,6 @@ query = (
     .start()
 )
 
-query.awaitTermination()
+# query.awaitTermination()
 # Await both terminations so the script stays alive for both streams
-# spark.streams.awaitAnyTermination()
+spark.streams.awaitAnyTermination()

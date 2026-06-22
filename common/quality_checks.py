@@ -1,36 +1,32 @@
 from pyspark.sql.functions import col
 
-def validate_records(df):
+def get_valid_records(df):
 
-    valid_df = df.filter(
-        col("event_id").isNotNull()
+    return (
+        df.filter(col("event_id").isNotNull())
+          .filter(col("user_id").isNotNull())
+          .filter(col("amount") >= 0)
+          .filter(
+              col("event_type").isin(
+                  "view",
+                  "add_to_cart",
+                  "purchase"
+              )
+          )
     )
 
-    valid_df = valid_df.filter(
-        col("user_id").isNotNull()
-    )
 
-    valid_df = valid_df.filter(
-        col("amount") >= 0
-    )
+def get_invalid_records(df):
 
-    # valid_df = valid_df.filter(
-    #     col("event_type").isin(
-    #         "view",
-    #         "add_to_cart",
-    #         "purchase"
-    #     )
-    # )
-
-    return valid_df
-
-
-def quarantine_records(df):
-
-    invalid_df = df.filter(
+    return df.filter(
         (col("event_id").isNull()) |
         (col("user_id").isNull()) |
-        (col("amount") < 0)
+        (col("amount") < 0) |
+        (
+            ~col("event_type").isin(
+                "view",
+                "add_to_cart",
+                "purchase"
+            )
+        )
     )
-
-    return invalid_df

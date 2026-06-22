@@ -1,4 +1,4 @@
-from pyspark.sql.types import *
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, DoubleType, DateType
 
 silver_schema = StructType([
     StructField("event_id", StringType(), True),
