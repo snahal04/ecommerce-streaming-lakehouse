@@ -16,7 +16,7 @@ df = (
     .format("kafka")
     .option("kafka.bootstrap.servers", "localhost:9092")
     .option("subscribe", "ecommerce-events")
-    .option("startingOffsets", "latest")
+    .option("startingOffsets", "earliest")
     .option("failOnDataLoss", "false")
     .load()
 )
