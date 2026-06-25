@@ -4,7 +4,7 @@ import uuid
 import json
 import random
 import time
-from datetime import datetime
+from datetime import datetime, UTC
 
 fake = Faker()
 
@@ -37,7 +37,7 @@ while True:
             "event_id": str(uuid.uuid4()),
             "user_id": random.randint(1, 1000),
             "session_id": random.randint(10000, 99999),
-            "event_time": datetime.utcnow().isoformat(),
+            "event_time": datetime.now(UTC).isoformat(),
             "event_type": random.choice(event_types),
             "product_id": f"P{random.randint(1,100)}",
             "amount": round(random.uniform(100, 5000), 2),

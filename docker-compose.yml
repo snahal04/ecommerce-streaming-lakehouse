@@ -15,6 +15,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_DEFAULT_PARTITION_COUNT: 3
       
       # KRaft cluster ID automatically generates if not provided, 
       # but you can explicitly map it if needed.
