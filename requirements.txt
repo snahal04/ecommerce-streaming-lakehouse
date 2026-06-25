@@ -1,4 +1,8 @@
 Faker==40.23.0
-kafka-python==3.0.5
+iniconfig==2.3.0
+kafka-python-ng==2.2.3
+packaging==26.2
+pluggy==1.6.0
 py4j==0.10.9.7
+Pygments==2.20.0
 pyspark==3.5.6
